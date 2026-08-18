@@ -1,0 +1,1909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bracket Maker | AppADay 103</title>
+<meta name="description" content="Type in the names, seed them or shuffle the draw, then tap the winner of each match and watch it climb. A printable, shareable single-elimination bracket.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --enamel:#0d302b;
+    --enamel-2:#081f1c;
+    --panel:#123c35;
+    --panel-2:#184a42;
+    --chalk:#eff4ee;
+    --chalk-dim:#8dada5;
+    --rule:rgba(239,244,238,.16);
+    --brass:#f2b32e;
+    --brass-dim:rgba(242,179,46,.16);
+    --flag:#e8503a;
+    --stub:17px;
+    --col:198px;
+    --cell:76px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100dvh;
+    display:flex;
+    flex-direction:column;
+    background:
+      radial-gradient(130% 90% at 50% -10%, #17453d 0%, var(--enamel) 42%, var(--enamel-2) 100%);
+    color:var(--chalk);
+    font-family:'Barlow Condensed',Arial Narrow,Arial,sans-serif;
+    font-size:17px;
+    -webkit-font-smoothing:antialiased;
+  }
+  button{font-family:inherit;}
+
+  /* ---------- header ---------- */
+  header{
+    display:flex;align-items:baseline;gap:.7rem;flex-wrap:wrap;
+    padding:.8rem 1rem .7rem;
+    border-bottom:1px solid var(--rule);
+    background:rgba(4,17,15,.55);
+  }
+  .num{
+    font-family:'Space Mono',monospace;
+    font-size:.68rem;font-weight:700;letter-spacing:.16em;
+    color:var(--brass);
+    border:1px solid rgba(242,179,46,.42);
+    border-radius:2px;
+    padding:.16rem .42rem;
+  }
+  .wordmark{
+    font-family:'Bebas Neue',Impact,sans-serif;
+    font-weight:400;font-size:1.5rem;letter-spacing:.03em;
+    margin:0;line-height:1;
+  }
+  .tag{font-size:.86rem;color:var(--chalk-dim);letter-spacing:.02em;}
+  .home{
+    margin-left:auto;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--chalk-dim);text-decoration:none;border-bottom:1px solid var(--rule);
+  }
+  .home:hover,.home:focus-visible{color:var(--brass);border-color:var(--brass);}
+
+  main{flex:1;width:100%;max-width:1600px;margin:0 auto;padding:1rem;}
+
+  /* ---------- setup panel ---------- */
+  .setup{
+    max-width:640px;margin:0 auto;
+    background:linear-gradient(180deg,var(--panel) 0%,rgba(9,34,30,.7) 100%);
+    border:1px solid var(--rule);
+    border-radius:4px;
+    padding:1.1rem 1.1rem 1.2rem;
+    box-shadow:0 18px 40px rgba(0,0,0,.28);
+  }
+  .setup h2{
+    font-family:'Bebas Neue',Impact,sans-serif;font-weight:400;
+    font-size:1.55rem;letter-spacing:.05em;margin:0 0 .15rem;
+  }
+  .setup .lede{margin:0 0 1rem;color:var(--chalk-dim);font-size:.95rem;}
+  .field{margin-bottom:.95rem;}
+  .field label,.legend{
+    display:block;font-family:'Space Mono',monospace;
+    font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--chalk-dim);margin-bottom:.35rem;
+  }
+  input[type=text],textarea{
+    width:100%;
+    background:rgba(4,17,15,.55);
+    border:1px solid var(--rule);
+    border-radius:3px;
+    color:var(--chalk);
+    font-family:'Barlow Condensed',Arial Narrow,sans-serif;
+    font-size:1.05rem;
+    padding:.55rem .6rem;
+    line-height:1.45;
+  }
+  textarea{min-height:190px;resize:vertical;}
+  input[type=text]:focus,textarea:focus{outline:2px solid var(--brass);outline-offset:1px;border-color:transparent;}
+  .count{
+    font-family:'Space Mono',monospace;font-size:.7rem;color:var(--chalk-dim);
+    margin-top:.35rem;display:block;
+  }
+  .count.bad{color:var(--flag);}
+  .choices{display:flex;gap:.5rem;flex-wrap:wrap;}
+  .choice{
+    flex:1 1 180px;text-align:left;cursor:pointer;
+    background:rgba(4,17,15,.4);border:1px solid var(--rule);border-radius:3px;
+    color:var(--chalk);padding:.55rem .65rem;font-size:.98rem;line-height:1.25;
+  }
+  .choice small{display:block;color:var(--chalk-dim);font-size:.82rem;margin-top:.1rem;}
+  .choice[aria-pressed=true]{
+    border-color:var(--brass);background:var(--brass-dim);
+  }
+  .choice:focus-visible{outline:2px solid var(--brass);outline-offset:2px;}
+  .field label.check{
+    display:flex;align-items:center;gap:.5rem;cursor:pointer;
+    font-family:'Barlow Condensed',Arial Narrow,Arial,sans-serif;
+    font-size:1.02rem;text-transform:none;letter-spacing:0;
+    color:var(--chalk);margin-bottom:0;
+  }
+  .check input{width:18px;height:18px;accent-color:var(--brass);}
+  .sizes{display:flex;gap:.4rem;flex-wrap:wrap;}
+  .size{
+    cursor:pointer;background:rgba(4,17,15,.4);border:1px solid var(--rule);
+    border-radius:3px;color:var(--chalk);padding:.45rem .8rem;
+    font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:.08em;
+  }
+  .size[aria-pressed=true]{border-color:var(--brass);background:var(--brass-dim);color:var(--brass);}
+  .size:disabled{opacity:.3;cursor:default;}
+  .size:focus-visible{outline:2px solid var(--brass);outline-offset:2px;}
+  .setup-actions{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1.1rem;}
+
+  .btn{
+    cursor:pointer;border-radius:3px;padding:.5rem .85rem;
+    font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:.1em;
+    text-transform:uppercase;
+    background:rgba(4,17,15,.45);border:1px solid var(--rule);color:var(--chalk);
+  }
+  .btn:hover{border-color:var(--brass);color:var(--brass);}
+  .btn:focus-visible{outline:2px solid var(--brass);outline-offset:2px;}
+  .btn.primary{background:var(--brass);border-color:var(--brass);color:#231701;font-weight:700;}
+  .btn.primary:hover{background:#ffc648;color:#231701;}
+  .btn:disabled{opacity:.4;cursor:default;}
+  .btn:disabled:hover{border-color:var(--rule);color:var(--chalk);}
+
+  /* ---------- board ---------- */
+  .board[hidden]{display:none;}
+  .board-top{
+    display:flex;align-items:flex-end;gap:.8rem;flex-wrap:wrap;
+    border-bottom:1px solid var(--rule);padding-bottom:.7rem;margin-bottom:.2rem;
+  }
+  .title{
+    font-family:'Bebas Neue',Impact,sans-serif;font-weight:400;
+    font-size:1.9rem;letter-spacing:.04em;line-height:1;margin:0;
+  }
+  .progress{font-family:'Space Mono',monospace;font-size:.72rem;color:var(--chalk-dim);}
+  .progress b{color:var(--brass);font-weight:700;}
+  .tools{display:flex;gap:.4rem;flex-wrap:wrap;margin-left:auto;}
+
+  .scroller{
+    overflow-x:auto;overflow-y:visible;
+    padding:.9rem 0 1.2rem;
+    -webkit-overflow-scrolling:touch;
+  }
+  .rounds{display:flex;align-items:stretch;gap:calc(var(--stub)*2);min-width:min-content;padding-right:.5rem;}
+  .rail{
+    display:flex;flex-direction:column;width:30px;min-width:30px;
+    position:sticky;left:0;z-index:3;background:var(--enamel-2);
+  }
+  .rblocks{display:flex;flex-direction:column;flex:1;}
+  .rblock{
+    flex:1;display:flex;align-items:center;justify-content:center;
+    border-left:2px solid var(--rule);background:rgba(239,244,238,.02);
+    overflow:hidden;
+  }
+  .rblock:nth-child(even){background:rgba(239,244,238,.06);}
+  .rname{
+    writing-mode:vertical-rl;transform:rotate(180deg);
+    font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--chalk-dim);white-space:nowrap;
+  }
+  .rdiv{
+    position:absolute;left:0;right:0;bottom:0;
+    border-top:1px dashed rgba(239,244,238,.24);
+  }
+  .round{display:flex;flex-direction:column;width:var(--col);min-width:var(--col);}
+  .rhead{
+    height:30px;display:flex;align-items:center;gap:.4rem;
+    font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.15em;
+    text-transform:uppercase;color:var(--chalk-dim);
+    border-bottom:1px solid var(--rule);margin-bottom:.55rem;white-space:nowrap;
+  }
+  .rhead b{color:var(--brass);font-weight:700;}
+  .cells{display:flex;flex-direction:column;flex:1;}
+  .cell{
+    flex:1;display:flex;align-items:center;position:relative;
+    min-height:var(--cell);
+  }
+  .card{width:100%;position:relative;}
+
+  .round:not(:last-of-type) .cell::before{
+    content:'';position:absolute;top:50%;
+    right:calc(var(--stub) * -1);width:var(--stub);
+    border-top:2px solid var(--rule);
+  }
+  .round:not(:last-of-type):not(.final) .cell:nth-child(odd)::after{
+    content:'';position:absolute;top:50%;height:100%;
+    right:calc(var(--stub) * -1);width:var(--stub);
+    border-right:2px solid var(--rule);
+  }
+  .round:not(:first-of-type) .card::before{
+    content:'';position:absolute;top:50%;
+    left:calc(var(--stub) * -1);width:var(--stub);
+    border-top:2px solid var(--rule);
+  }
+  .cell.won::before,.cell.won::after{border-color:rgba(242,179,46,.4);}
+  .cell.fed .card::before{border-color:rgba(242,179,46,.4);}
+  .cell.lit::before,.cell.lit::after,.cell.lit .card::before{border-color:var(--brass);}
+
+  .mno{
+    position:absolute;top:-8px;left:6px;z-index:2;
+    font-family:'Space Mono',monospace;font-size:.56rem;letter-spacing:.1em;
+    color:var(--chalk-dim);background:var(--enamel);padding:0 .25rem;border-radius:2px;
+  }
+  .match{
+    border:1px solid var(--rule);border-radius:3px;overflow:hidden;
+    background:rgba(4,17,15,.42);
+  }
+  .cell.target .match{box-shadow:0 0 0 2px var(--flag);}
+  .slot{
+    display:flex;align-items:center;gap:.5rem;width:100%;
+    padding:.4rem .55rem;text-align:left;
+    background:transparent;border:0;color:var(--chalk);
+    font-family:'Barlow Condensed',Arial Narrow,sans-serif;font-size:1.02rem;line-height:1.2;
+    min-height:32px;
+  }
+  .slot + .slot{border-top:1px solid var(--rule);}
+  button.slot{cursor:pointer;}
+  button.slot:hover{background:rgba(242,179,46,.1);}
+  button.slot:focus-visible{outline:2px solid var(--brass);outline-offset:-2px;}
+  .pnum{
+    font-family:'Space Mono',monospace;font-size:.66rem;color:var(--chalk-dim);
+    min-width:1.4em;text-align:right;flex:0 0 auto;
+  }
+  .pname{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .slot.win{background:var(--brass-dim);box-shadow:inset 3px 0 0 var(--brass);}
+  .slot.win .pname{font-weight:600;}
+  .slot.win .pnum{color:var(--brass);}
+  .slot.lose{opacity:.42;}
+  .slot.tbd .pname,.slot.bye .pname{color:var(--chalk-dim);font-style:italic;}
+  .slot.bye{opacity:.55;}
+
+  .round.champ .cells{justify-content:center;}
+  .plate{
+    border:1px solid rgba(242,179,46,.55);border-radius:3px;
+    background:linear-gradient(180deg,rgba(232,80,58,.9) 0%,rgba(168,45,28,.9) 100%);
+    padding:.6rem .7rem;text-align:center;
+  }
+  .plate .k{
+    font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.18em;
+    text-transform:uppercase;color:rgba(255,255,255,.8);display:block;
+  }
+  .plate .v{
+    font-family:'Bebas Neue',Impact,sans-serif;font-size:1.5rem;letter-spacing:.03em;
+    line-height:1.1;display:block;margin-top:.15rem;word-break:break-word;
+  }
+  .plate.empty{
+    background:rgba(4,17,15,.42);border-color:var(--rule);
+  }
+  .plate.empty .v{color:var(--chalk-dim);font-size:1.15rem;}
+
+  .extras{display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-start;margin-top:.4rem;}
+  .third{
+    border:1px solid var(--rule);border-radius:3px;padding:.6rem .7rem;
+    background:rgba(4,17,15,.35);width:280px;
+  }
+  .third h3,.runline h3{
+    font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--chalk-dim);margin:0 0 .45rem;font-weight:400;
+  }
+  .runline{
+    flex:1 1 320px;border:1px solid rgba(242,179,46,.35);border-radius:3px;
+    padding:.6rem .75rem;background:var(--brass-dim);
+  }
+  .runline p{margin:0;font-size:1.02rem;line-height:1.5;}
+  .runline b{color:var(--brass);}
+  .hint{
+    color:var(--chalk-dim);font-size:.92rem;margin:.2rem 0 0;
+  }
+
+  /* ---------- modal + toast ---------- */
+  /* ---------- round robin pools ---------- */
+  .pools{
+    display:grid;gap:.9rem;margin:.9rem 0 1rem;
+    grid-template-columns:repeat(auto-fill,minmax(310px,1fr));
+  }
+  .pool{
+    border:1px solid var(--rule);border-radius:3px;
+    background:rgba(4,17,15,.38);padding:.7rem .75rem .8rem;
+  }
+  .pool h3{
+    font-family:'Bebas Neue',Impact,sans-serif;font-weight:400;
+    font-size:1.15rem;letter-spacing:.05em;margin:0 0 .5rem;
+    display:flex;align-items:baseline;gap:.5rem;
+  }
+  .pool h3 span{
+    font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.14em;
+    color:var(--chalk-dim);text-transform:uppercase;margin-left:auto;
+  }
+  table.stand{width:100%;border-collapse:collapse;margin-bottom:.7rem;}
+  table.stand th{
+    font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--chalk-dim);font-weight:400;
+    text-align:right;padding:.2rem .25rem;border-bottom:1px solid var(--rule);
+  }
+  table.stand th.l,table.stand td.l{text-align:left;}
+  table.stand td{
+    padding:.28rem .25rem;text-align:right;font-size:.98rem;
+    border-bottom:1px solid rgba(239,244,238,.07);
+  }
+  table.stand td.pos{
+    font-family:'Space Mono',monospace;font-size:.68rem;color:var(--chalk-dim);
+    width:1.6em;text-align:center;
+  }
+  table.stand td.pts{font-family:'Space Mono',monospace;font-weight:700;color:var(--brass);}
+  table.stand td.rec{font-family:'Space Mono',monospace;font-size:.76rem;color:var(--chalk-dim);}
+  table.stand tr.top td{background:var(--brass-dim);}
+  table.stand td.nudge{width:2.9em;white-space:nowrap;text-align:right;}
+  .nub{
+    background:transparent;border:1px solid var(--rule);border-radius:2px;
+    color:var(--chalk-dim);cursor:pointer;line-height:1;
+    padding:.05rem .22rem;font-size:.7rem;font-family:'Space Mono',monospace;
+  }
+  .nub:hover{border-color:var(--brass);color:var(--brass);}
+  .nub:disabled{opacity:.25;cursor:default;}
+  .nub:focus-visible{outline:2px solid var(--brass);outline-offset:1px;}
+  .glabel{
+    font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--chalk-dim);margin:0 0 .3rem;
+  }
+  .game{
+    display:flex;align-items:stretch;gap:.3rem;margin-bottom:.3rem;
+  }
+  .side{
+    flex:1;min-width:0;cursor:pointer;text-align:left;
+    background:rgba(4,17,15,.4);border:1px solid var(--rule);border-radius:3px;
+    color:var(--chalk);padding:.32rem .45rem;font-size:.98rem;
+    font-family:'Barlow Condensed',Arial Narrow,Arial,sans-serif;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .side:hover{border-color:var(--brass);}
+  .side:focus-visible{outline:2px solid var(--brass);outline-offset:1px;}
+  .side.win{background:var(--brass-dim);border-color:rgba(242,179,46,.5);font-weight:600;}
+  .side.lose{opacity:.42;}
+  .side.drew{background:rgba(239,244,238,.08);border-style:dashed;}
+  .drawbtn{
+    flex:0 0 auto;width:2rem;cursor:pointer;border-radius:3px;
+    background:rgba(4,17,15,.4);border:1px solid var(--rule);color:var(--chalk-dim);
+    font-family:'Space Mono',monospace;font-size:.68rem;
+  }
+  .drawbtn:hover{border-color:var(--brass);color:var(--brass);}
+  .drawbtn.on{background:rgba(239,244,238,.12);color:var(--chalk);border-color:var(--chalk-dim);}
+  .drawbtn.blank{background:transparent;border-color:transparent;}
+  .drawbtn:focus-visible{outline:2px solid var(--brass);outline-offset:1px;}
+  details.rrbox{
+    border:1px solid var(--rule);border-radius:3px;
+    background:rgba(4,17,15,.3);margin-top:.6rem;padding:.2rem .7rem;
+  }
+  details.rrbox > summary{
+    cursor:pointer;list-style:none;padding:.5rem 0;
+    font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--chalk-dim);
+  }
+  details.rrbox > summary::-webkit-details-marker{display:none;}
+  details.rrbox > summary:hover{color:var(--brass);}
+  details.rrbox[open] > summary{border-bottom:1px solid var(--rule);margin-bottom:.6rem;}
+
+  .veil{
+    position:fixed;inset:0;background:rgba(3,12,11,.72);
+    display:flex;align-items:center;justify-content:center;padding:1rem;z-index:40;
+  }
+  .veil[hidden]{display:none;}
+  .dialog{
+    background:var(--panel);border:1px solid var(--rule);border-radius:4px;
+    padding:1rem 1.1rem;max-width:400px;width:100%;
+    box-shadow:0 22px 50px rgba(0,0,0,.45);
+  }
+  .dialog h3{font-family:'Bebas Neue',Impact,sans-serif;font-weight:400;font-size:1.3rem;letter-spacing:.04em;margin:0 0 .3rem;}
+  .dialog p{margin:0 0 1rem;color:var(--chalk-dim);font-size:1rem;line-height:1.45;}
+  .dialog .row{display:flex;gap:.5rem;justify-content:flex-end;}
+  .toast{
+    position:fixed;left:50%;bottom:1.1rem;transform:translateX(-50%);
+    background:var(--panel-2);border:1px solid var(--rule);border-radius:3px;
+    padding:.5rem .8rem;font-size:.95rem;z-index:50;
+    box-shadow:0 10px 26px rgba(0,0,0,.4);
+    opacity:0;pointer-events:none;transition:opacity .18s ease;
+    max-width:88vw;text-align:center;
+  }
+  .toast.show{opacity:1;}
+
+  footer{
+    display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;
+    padding:.85rem 1rem 1.2rem;border-top:1px solid var(--rule);
+    font-size:.85rem;color:var(--chalk-dim);
+  }
+  footer a{color:var(--chalk-dim);text-decoration:none;border-bottom:1px solid var(--rule);}
+  footer a:hover,footer a:focus-visible{color:var(--brass);border-color:var(--brass);}
+  footer .sig{margin-left:auto;font-family:'Space Mono',monospace;font-size:.68rem;letter-spacing:.12em;}
+
+  @media (max-width:640px){
+    :root{--stub:13px;--col:162px;--cell:70px;}
+    .rail{width:24px;min-width:24px;}
+    .wordmark{font-size:1.3rem;}
+    .title{font-size:1.5rem;}
+    .tag{display:none;}
+    main{padding:.75rem;}
+    .third{width:100%;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none !important;animation:none !important;}
+  }
+
+  /* ---------- print ---------- */
+  @page{size:landscape;margin:.4in;}
+  @media print{
+    :root{--rule:#999;--chalk:#000;--chalk-dim:#555;--brass:#000;--stub:14px;--col:152px;--cell:58px;}
+    body{
+      background:#fff;color:#000;font-size:12px;
+      -webkit-print-color-adjust:exact;print-color-adjust:exact;
+    }
+    header,footer,.tools,.setup,.veil,.toast,.hint{display:none !important;}
+    main{padding:0 2px 0 6px;max-width:none;}
+    .board-top{border-bottom:1px solid #000;}
+    .title{font-size:20px;}
+    .scroller{overflow:visible;}
+    .rounds{min-width:0;}
+    .match{background:#fff;border:1px solid #666;}
+    .mno{background:#fff;color:#777;}
+    .slot.win{background:#eee;box-shadow:inset 3px 0 0 #000;}
+    .slot.lose{opacity:1;color:#888;}
+    .plate{background:#fff;border:2px solid #000;color:#000;}
+    .plate.empty{background:#fff;border:1px solid #999;}
+    .plate.empty .v{color:#666;}
+    .plate .k{color:#555;}
+    .runline{background:#fff;border:1px solid #666;}
+    .third{background:#fff;}
+    .rail{position:static;background:#fff;}
+    .pool{background:#fff;border:1px solid #666;break-inside:avoid;}
+    .pools{grid-template-columns:repeat(3,1fr);}
+    table.stand tr.top td{background:#eee;}
+    .side{background:#fff;border:1px solid #999;}
+    .side.win{background:#eee;border-color:#000;}
+    .nub,table.stand td.nudge,table.stand th:last-child{display:none;}
+    .side.lose{opacity:1;color:#888;}
+    .drawbtn{background:#fff;}
+    details.rrbox{background:#fff;border:1px solid #666;}
+    details.rrbox > summary{display:none;}
+    .rblock{background:#fff;border-left:1px solid #000;}
+    .rblock:nth-child(even){background:#f2f2f2;}
+    .rname{color:#000;}
+    .rdiv{border-top:1px dashed #999;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="num">103</span>
+  <h1 class="wordmark">Bracket Maker</h1>
+  <span class="tag">tap the winner, watch it climb</span>
+  <a class="home" href="https://augustineiacopelli.github.io/appaday/">AppADay</a>
+</header>
+
+<main>
+
+  <section class="setup" id="setup">
+    <h2 id="setupTitle">Set the draw</h2>
+    <p class="lede" id="setupLede">One name per line. Anything from 2 to 64 entrants. Empty slots become byes.</p>
+
+    <div class="field">
+      <label for="tname">Tournament name</label>
+      <input type="text" id="tname" maxlength="60" placeholder="Iacopelli Family Showdown">
+    </div>
+
+    <div class="field">
+      <label for="names">Entrants</label>
+      <textarea id="names" spellcheck="false" placeholder="Stino&#10;Simon&#10;Bianca&#10;Ana"></textarea>
+      <span class="count" id="ncount">0 entrants</span>
+    </div>
+
+    <div class="field">
+      <span class="legend">How to fill the draw</span>
+      <div class="choices">
+        <button type="button" class="choice" id="modeSeed" aria-pressed="true">
+          Seed in my order
+          <small>First name is the top seed. Byes go to the top.</small>
+        </button>
+        <button type="button" class="choice" id="modeShuffle" aria-pressed="false">
+          Shuffle the draw
+          <small>Random positions. Nobody gets to pick.</small>
+        </button>
+      </div>
+    </div>
+
+    <div class="field">
+      <span class="legend">Round robin play-in</span>
+      <div class="sizes">
+        <button type="button" class="size" id="ps0" aria-pressed="true">Skip it</button>
+        <button type="button" class="size" id="ps3" aria-pressed="false">Pools of 3</button>
+        <button type="button" class="size" id="ps4" aria-pressed="false">Pools of 4</button>
+        <button type="button" class="size" id="ps5" aria-pressed="false">Pools of 5</button>
+        <button type="button" class="size" id="ps6" aria-pressed="false">Pools of 6</button>
+      </div>
+      <span class="count" id="pcount"></span>
+    </div>
+
+    <div class="field">
+      <span class="legend">Split into regions</span>
+      <div class="sizes">
+        <button type="button" class="size" id="rs0" aria-pressed="true">One bracket</button>
+        <button type="button" class="size" id="rs4" aria-pressed="false">Regions of 4</button>
+        <button type="button" class="size" id="rs8" aria-pressed="false">Regions of 8</button>
+        <button type="button" class="size" id="rs16" aria-pressed="false">Regions of 16</button>
+      </div>
+      <span class="count" id="rcount"></span>
+    </div>
+
+    <div class="field" id="rnameField" hidden>
+      <label for="rnames">Region names</label>
+      <input type="text" id="rnames" maxlength="120" placeholder="East, West, South, Midwest">
+    </div>
+
+    <div class="field">
+      <label class="check"><input type="checkbox" id="thirdBox"> Play a third place match</label>
+    </div>
+
+    <div class="setup-actions">
+      <button type="button" class="btn primary" id="buildBtn">Build the bracket</button>
+      <button type="button" class="btn" id="cancelBtn" hidden>Keep the current bracket</button>
+    </div>
+  </section>
+
+  <section class="board" id="poolboard" hidden>
+    <div class="board-top">
+      <div>
+        <h2 class="title" id="poolTitle">Round robin</h2>
+        <span class="progress" id="poolProgress"></span>
+      </div>
+      <div class="tools">
+        <button type="button" class="btn primary" id="seedBtn">Seed the bracket</button>
+        <button type="button" class="btn" id="poolEditBtn">Entrants</button>
+        <button type="button" class="btn" id="poolLinkBtn">Copy link</button>
+        <button type="button" class="btn" id="poolPrintBtn">Print</button>
+        <button type="button" class="btn" id="poolResetBtn">Start over</button>
+      </div>
+    </div>
+    <div class="pools" id="poolGrid"></div>
+    <p class="hint">Tap a winner, or D for a draw. Tap it again to clear. Nobody goes home; this only sets the seed line.</p>
+  </section>
+
+  <section class="board" id="board" hidden>
+    <div class="board-top">
+      <div>
+        <h2 class="title" id="boardTitle">Bracket</h2>
+        <span class="progress" id="progress"></span>
+      </div>
+      <div class="tools">
+        <button type="button" class="btn" id="nextBtn">Next match</button>
+        <button type="button" class="btn" id="shuffleBtn">Redraw</button>
+        <button type="button" class="btn" id="editBtn">Entrants</button>
+        <button type="button" class="btn" id="linkBtn">Copy link</button>
+        <button type="button" class="btn" id="printBtn">Print</button>
+        <button type="button" class="btn" id="resetBtn">Start over</button>
+      </div>
+    </div>
+
+    <div class="scroller" id="scroller">
+      <div class="rounds" id="rounds"></div>
+    </div>
+
+    <div class="extras">
+      <div class="third" id="thirdWrap" hidden>
+        <h3>Third place</h3>
+        <div id="thirdCard"></div>
+      </div>
+      <div class="runline" id="runline" hidden>
+        <h3>Path to the title</h3>
+        <p id="runText"></p>
+      </div>
+    </div>
+    <details class="rrbox" id="rrbox" hidden>
+      <summary>Round robin standings</summary>
+      <div class="pools" id="rrGrid"></div>
+    </details>
+    <p class="hint" id="hint">Tap a name to send it through. Tap the other name to change your mind.</p>
+  </section>
+
+</main>
+
+<div class="veil" id="veil" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlgTitle">
+    <h3 id="dlgTitle">Are you sure?</h3>
+    <p id="dlgBody">This clears the results.</p>
+    <div class="row">
+      <button type="button" class="btn" id="dlgNo">Never mind</button>
+      <button type="button" class="btn primary" id="dlgYes">Do it</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<footer>
+  <span>App 103 of the AppADay project</span>
+  <a href="https://augustineiacopelli.github.io/appaday/">Back to the portfolio</a>
+  <span class="sig">Augustine Iacopelli</span>
+</footer>
+
+<script>
+(function(){
+  'use strict';
+
+  var LS_KEY = 'appaday-103-bracket';
+  var BYE = -1;
+  var MAX_ENTRANTS = 64;
+
+  var state = null;
+
+  /* ---------- tiny helpers ---------- */
+  function $(id){ return document.getElementById(id); }
+  function el(tag, cls, text){
+    var n = document.createElement(tag);
+    if(cls){ n.className = cls; }
+    if(text !== undefined && text !== null){ n.textContent = text; }
+    return n;
+  }
+  function clear(node){
+    while(node.firstChild){ node.removeChild(node.firstChild); }
+  }
+  var toastTimer = null;
+  function toast(msg){
+    var t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    if(toastTimer){ clearTimeout(toastTimer); }
+    toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2200);
+  }
+  var dlgAction = null;
+  function ask(title, body, yesLabel, onYes){
+    $('dlgTitle').textContent = title;
+    $('dlgBody').textContent = body;
+    $('dlgYes').textContent = yesLabel;
+    dlgAction = onYes;
+    $('veil').hidden = false;
+    $('dlgYes').focus();
+  }
+  function closeDialog(){
+    $('veil').hidden = true;
+    dlgAction = null;
+  }
+
+  /* ---------- bracket math ---------- */
+  function seedOrder(size){
+    var order = [1];
+    while(order.length < size){
+      var n = order.length * 2;
+      var next = [];
+      for(var i = 0; i < order.length; i++){
+        next.push(order[i]);
+        next.push(n + 1 - order[i]);
+      }
+      order = next;
+    }
+    return order;
+  }
+
+  function shuffled(list){
+    var a = list.slice();
+    for(var i = a.length - 1; i > 0; i--){
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+    }
+    return a;
+  }
+
+  function bracketSize(n){
+    var size = 2;
+    while(size < n){ size *= 2; }
+    return size;
+  }
+
+  function regionsAllowed(n, regionSize){
+    if(!regionSize){ return true; }
+    if(n < 2){ return false; }
+    return regionSize <= bracketSize(n) / 2;
+  }
+
+  function geometry(n, regionSize){
+    var size = bracketSize(n);
+    if(!regionsAllowed(n, regionSize)){ regionSize = 0; }
+    if(!regionSize){ return { size: size, k: 1, r: size, regionSize: 0 }; }
+    return { size: size, k: size / regionSize, r: regionSize, regionSize: regionSize };
+  }
+
+  function defaultRegionNames(k, supplied){
+    var letters = 'ABCDEFGHIJKLMNOP';
+    var out = [];
+    for(var i = 0; i < k; i++){
+      var given = (supplied && supplied[i]) ? String(supplied[i]).slice(0, 18) : '';
+      out.push(given || ('Region ' + letters.charAt(i)));
+    }
+    return out;
+  }
+
+  /* ---------- round robin pools ---------- */
+  function poolNamesFor(k){
+    var letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    var out = [];
+    for(var i = 0; i < k; i++){ out.push('Pool ' + letters.charAt(i % 26)); }
+    return out;
+  }
+
+  function poolCountFor(n, poolSize){
+    return Math.ceil(n / poolSize);
+  }
+
+  function poolGameCount(n, poolSize){
+    var k = poolCountFor(n, poolSize);
+    var total = 0;
+    for(var p = 0; p < k; p++){
+      var members = Math.floor(n / k) + (p < (n % k) ? 1 : 0);
+      total += members * (members - 1) / 2;
+    }
+    return total;
+  }
+
+  function makePoolStage(names, mode, poolSize, third, title, regionSize, regionNames){
+    var list = (mode === 'shuffle') ? shuffled(names) : names.slice();
+    var K = poolCountFor(list.length, poolSize);
+    var pools = [];
+    var i, j, p;
+    for(i = 0; i < K; i++){ pools.push([]); }
+    for(var s = 1; s <= list.length; s++){
+      var row = Math.floor((s - 1) / K);
+      var col = (s - 1) % K;
+      p = (row % 2 === 0) ? col : (K - 1 - col);
+      pools[p].push(s - 1);
+    }
+    var games = [];
+    for(p = 0; p < K; p++){
+      for(i = 0; i < pools[p].length; i++){
+        for(j = i + 1; j < pools[p].length; j++){
+          games.push({ p: p, i: pools[p][i], j: pools[p][j], r: null });
+        }
+      }
+    }
+    return {
+      v: 3,
+      title: title || 'Bracket',
+      mode: mode,
+      third: !!third,
+      regionSize: regionSize || 0,
+      regionNames: regionNames || [],
+      phase: 'pools',
+      pool: {
+        size: poolSize,
+        mode: mode,
+        entrants: list,
+        pools: pools,
+        names: poolNamesFor(K),
+        games: games,
+        manual: {}
+      }
+    };
+  }
+
+  function poolStats(st, p){
+    var map = {};
+    var mem = st.pool.pools[p];
+    var i;
+    for(i = 0; i < mem.length; i++){
+      map[mem[i]] = { id: mem[i], w: 0, d: 0, l: 0, pts: 0, played: 0 };
+    }
+    for(i = 0; i < st.pool.games.length; i++){
+      var g = st.pool.games[i];
+      if(g.p !== p || !g.r){ continue; }
+      var A = map[g.i], B = map[g.j];
+      if(!A || !B){ continue; }
+      A.played++; B.played++;
+      if(g.r === 'd'){ A.d++; B.d++; A.pts += 1; B.pts += 1; }
+      else if(g.r === 'i'){ A.w++; A.pts += 3; B.l++; }
+      else{ B.w++; B.pts += 3; A.l++; }
+    }
+    return map;
+  }
+
+  function headToHead(st, p, ids){
+    var pts = {}, inSet = {}, i;
+    for(i = 0; i < ids.length; i++){ pts[ids[i]] = 0; inSet[ids[i]] = true; }
+    for(i = 0; i < st.pool.games.length; i++){
+      var g = st.pool.games[i];
+      if(g.p !== p || !g.r){ continue; }
+      if(!inSet[g.i] || !inSet[g.j]){ continue; }
+      if(g.r === 'd'){ pts[g.i] += 1; pts[g.j] += 1; }
+      else if(g.r === 'i'){ pts[g.i] += 3; }
+      else{ pts[g.j] += 3; }
+    }
+    return pts;
+  }
+
+  function manualOrder(st, p){
+    var m = st.pool.manual ? st.pool.manual[p] : null;
+    if(!m){ return null; }
+    var mem = st.pool.pools[p];
+    if(m.length !== mem.length){ return null; }
+    for(var i = 0; i < mem.length; i++){
+      if(m.indexOf(mem[i]) < 0){ return null; }
+    }
+    return m.slice();
+  }
+
+  function poolOrder(st, p){
+    var manual = manualOrder(st, p);
+    if(manual){ return manual; }
+    var map = poolStats(st, p);
+    var ids = st.pool.pools[p].slice();
+    ids.sort(function(a, b){
+      if(map[b].pts !== map[a].pts){ return map[b].pts - map[a].pts; }
+      return a - b;
+    });
+    var out = [];
+    var i = 0;
+    while(i < ids.length){
+      var j = i;
+      while(j + 1 < ids.length && map[ids[j + 1]].pts === map[ids[i]].pts){ j++; }
+      var group = ids.slice(i, j + 1);
+      if(group.length > 1){
+        var h = headToHead(st, p, group);
+        group.sort(function(a, b){
+          if(h[b] !== h[a]){ return h[b] - h[a]; }
+          if(map[b].w !== map[a].w){ return map[b].w - map[a].w; }
+          return a - b;
+        });
+      }
+      out = out.concat(group);
+      i = j + 1;
+    }
+    return out;
+  }
+
+  function poolsPlayed(st){
+    var done = 0;
+    for(var i = 0; i < st.pool.games.length; i++){
+      if(st.pool.games[i].r){ done++; }
+    }
+    return done;
+  }
+
+  function poolsComplete(st){
+    return poolsPlayed(st) === st.pool.games.length;
+  }
+
+  function seedLine(st){
+    var K = st.pool.pools.length;
+    var orders = [], stats = [], longest = 0, p;
+    for(p = 0; p < K; p++){
+      orders.push(poolOrder(st, p));
+      stats.push(poolStats(st, p));
+      if(orders[p].length > longest){ longest = orders[p].length; }
+    }
+    var line = [];
+    for(var pos = 0; pos < longest; pos++){
+      var group = [];
+      for(p = 0; p < K; p++){
+        if(orders[p][pos] !== undefined){ group.push({ id: orders[p][pos], p: p }); }
+      }
+      group.sort(function(a, b){
+        var A = stats[a.p][a.id], B = stats[b.p][b.id];
+        if(B.pts !== A.pts){ return B.pts - A.pts; }
+        if(B.w !== A.w){ return B.w - A.w; }
+        return a.id - b.id;
+      });
+      for(var q = 0; q < group.length; q++){ line.push(group[q].id); }
+    }
+    return line;
+  }
+
+  function makeBracket(names, mode, third, title, regionSize, regionNames){
+    var list = (mode === 'shuffle') ? shuffled(names) : names.slice();
+    var geo = geometry(list.length, regionSize);
+    var size = geo.size, K = geo.k, R = geo.r;
+    var draw = new Array(size);
+    var seeds = new Array(list.length);
+    var regionOf = new Array(list.length);
+    var i, j;
+
+    if(K === 1){
+      var order = seedOrder(size);
+      for(i = 0; i < size; i++){
+        var sd = order[i];
+        draw[i] = (sd <= list.length) ? sd - 1 : BYE;
+        if(sd <= list.length){ seeds[sd - 1] = sd; regionOf[sd - 1] = 0; }
+      }
+    }else{
+      var strength = seedOrder(K);
+      var posOfRank = new Array(K + 1);
+      for(i = 0; i < K; i++){ posOfRank[strength[i]] = i; }
+      var inner = seedOrder(R);
+      var bucket = [];
+      for(i = 0; i < K; i++){ bucket.push({}); }
+      for(var s = 1; s <= list.length; s++){
+        var row = Math.floor((s - 1) / K);
+        var col = (s - 1) % K;
+        var rank = (row % 2 === 0) ? (col + 1) : (K - col);
+        var pos = posOfRank[rank];
+        bucket[pos][row + 1] = s - 1;
+        seeds[s - 1] = row + 1;
+        regionOf[s - 1] = pos;
+      }
+      for(var p = 0; p < K; p++){
+        for(j = 0; j < R; j++){
+          var want = inner[j];
+          var pid = bucket[p][want];
+          draw[p * R + j] = (pid === undefined) ? BYE : pid;
+        }
+      }
+    }
+
+    var rounds = [draw];
+    var n = size;
+    while(n > 1){
+      n = n / 2;
+      var blank = [];
+      for(var q = 0; q < n; q++){ blank.push(null); }
+      rounds.push(blank);
+    }
+
+    var st = {
+      v: 2,
+      title: title || 'Bracket',
+      mode: mode,
+      third: !!third && size >= 4,
+      players: list,
+      seeds: seeds,
+      regionOf: regionOf,
+      regionSize: geo.regionSize,
+      regionNames: geo.regionSize ? defaultRegionNames(K, regionNames) : [],
+      rounds: rounds,
+      thirdWinner: null
+    };
+    resolveByes(st);
+    return st;
+  }
+
+  function resolveByes(st){
+    for(var c = 0; c < st.rounds.length - 1; c++){
+      var row = st.rounds[c];
+      for(var m = 0; m < row.length / 2; m++){
+        if(st.rounds[c + 1][m] !== null){ continue; }
+        var a = row[2 * m], b = row[2 * m + 1];
+        if(a === BYE && b === BYE){ st.rounds[c + 1][m] = BYE; }
+        else if(b === BYE && a !== null){ st.rounds[c + 1][m] = a; }
+        else if(a === BYE && b !== null){ st.rounds[c + 1][m] = b; }
+      }
+    }
+  }
+
+  function clearDownstream(st, c, m){
+    var p = m;
+    for(var cc = c + 1; cc < st.rounds.length; cc++){
+      p = Math.floor(p / 2);
+      st.rounds[cc][p] = null;
+    }
+  }
+
+  function semiColumn(st){
+    return st.rounds.length - 3;
+  }
+
+  function semiLosers(st){
+    var sc = semiColumn(st);
+    if(sc < 0){ return null; }
+    var out = [];
+    for(var m = 0; m < 2; m++){
+      var a = st.rounds[sc][2 * m], b = st.rounds[sc][2 * m + 1];
+      var w = st.rounds[sc + 1][m];
+      if(w === null || w === BYE){ return null; }
+      var loser = (w === a) ? b : a;
+      if(loser === null || loser === BYE){ return null; }
+      out.push(loser);
+    }
+    return out;
+  }
+
+  function totalMatches(st){
+    var t = 0;
+    for(var c = 0; c < st.rounds.length - 1; c++){ t += st.rounds[c].length / 2; }
+    return t;
+  }
+
+  function decidedMatches(st){
+    var d = 0;
+    for(var c = 1; c < st.rounds.length; c++){
+      for(var i = 0; i < st.rounds[c].length; i++){
+        if(st.rounds[c][i] !== null){ d++; }
+      }
+    }
+    return d;
+  }
+
+  function championId(st){
+    return st.rounds[st.rounds.length - 1][0];
+  }
+
+  function pathCells(st){
+    var champ = championId(st);
+    var map = {};
+    if(champ === null || champ === BYE){ return map; }
+    var pos = st.rounds[0].indexOf(champ);
+    if(pos < 0){ return map; }
+    for(var c = 0; c < st.rounds.length - 1; c++){
+      map[c + ':' + Math.floor(pos / 2)] = true;
+      pos = Math.floor(pos / 2);
+    }
+    return map;
+  }
+
+  function championRun(st){
+    var champ = championId(st);
+    if(champ === null || champ === BYE){ return null; }
+    var pos = st.rounds[0].indexOf(champ);
+    if(pos < 0){ return null; }
+    var beaten = [];
+    for(var c = 0; c < st.rounds.length - 1; c++){
+      var opp = st.rounds[c][pos ^ 1];
+      if(opp !== null && opp !== BYE){ beaten.push(st.players[opp]); }
+      pos = Math.floor(pos / 2);
+    }
+    return { name: st.players[champ], beaten: beaten };
+  }
+
+  function regionCount(st){
+    return (st.regionSize && st.regionNames && st.regionNames.length) ? st.regionNames.length : 1;
+  }
+
+  function roundLabel(st, matches){
+    var k = regionCount(st);
+    if(k > 1 && matches === k){ return 'Region finals'; }
+    if(matches === 1){ return 'Final'; }
+    if(matches === 2){ return 'Semifinals'; }
+    if(matches === 4){ return 'Quarterfinals'; }
+    return 'Round of ' + (matches * 2);
+  }
+
+  /* ---------- persistence ---------- */
+  function save(){
+    try{
+      if(state){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+      else{ localStorage.removeItem(LS_KEY); }
+    }catch(e){ /* storage unavailable, keep going */ }
+  }
+
+  function load(){
+    try{
+      var raw = localStorage.getItem(LS_KEY);
+      if(!raw){ return null; }
+      return sane(JSON.parse(raw));
+    }catch(e){ return null; }
+  }
+
+  function sane(obj){
+    if(!obj){ return null; }
+    if(!obj.phase){ obj.phase = 'bracket'; }
+    if(obj.phase === 'pools'){
+      var pl = obj.pool;
+      if(!pl || !pl.entrants || !pl.entrants.length || !pl.pools || !pl.games){ return null; }
+      if(pl.entrants.length > MAX_ENTRANTS){ return null; }
+      if(!pl.manual){ pl.manual = {}; }
+      if(!pl.names || pl.names.length !== pl.pools.length){ pl.names = poolNamesFor(pl.pools.length); }
+      if(!pl.mode){ pl.mode = 'seed'; }
+      if(!obj.title){ obj.title = 'Bracket'; }
+      if(!obj.regionNames){ obj.regionNames = []; }
+      if(!obj.regionSize){ obj.regionSize = 0; }
+      return obj;
+    }
+    if(!obj.players || !obj.rounds){ return null; }
+    if(!obj.players.length || !obj.rounds.length){ return null; }
+    if(obj.players.length > MAX_ENTRANTS){ return null; }
+    if(obj.pool && (!obj.pool.entrants || !obj.pool.games)){ obj.pool = null; }
+    if(obj.pool && !obj.pool.manual){ obj.pool.manual = {}; }
+    if(!obj.title){ obj.title = 'Bracket'; }
+    if(obj.thirdWinner === undefined){ obj.thirdWinner = null; }
+    if(!obj.regionSize){ obj.regionSize = 0; obj.regionNames = []; }
+    if(!obj.regionNames){ obj.regionNames = []; }
+    if(!obj.seeds){ obj.seeds = null; }
+    return obj;
+  }
+
+  /* ---------- share link ---------- */
+  function toB64(str){
+    var bytes = new TextEncoder().encode(str);
+    var bin = '';
+    for(var i = 0; i < bytes.length; i++){ bin += String.fromCharCode(bytes[i]); }
+    return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+  function fromB64(s){
+    var b = s.replace(/-/g, '+').replace(/_/g, '/');
+    while(b.length % 4){ b += '='; }
+    var bin = atob(b);
+    var bytes = new Uint8Array(bin.length);
+    for(var i = 0; i < bin.length; i++){ bytes[i] = bin.charCodeAt(i); }
+    return new TextDecoder().decode(bytes);
+  }
+  function shareUrl(){
+    var base = location.origin + location.pathname;
+    return base + '#b=' + toB64(JSON.stringify(state));
+  }
+  function copyText(text, okMsg){
+    function fallback(){
+      var ta = el('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', 'readonly');
+      ta.style.position = 'fixed';
+      ta.style.top = '-1000px';
+      document.body.appendChild(ta);
+      ta.select();
+      var done = false;
+      try{ done = document.execCommand('copy'); }catch(e){ done = false; }
+      document.body.removeChild(ta);
+      toast(done ? okMsg : 'Copy did not go through. Try the address bar.');
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){ toast(okMsg); }, fallback);
+    }else{
+      fallback();
+    }
+  }
+
+  /* ---------- rendering ---------- */
+  function slotNode(st, c, m, side){
+    var v = st.rounds[c][2 * m + side];
+    var w = st.rounds[c + 1][m];
+    var isWin = (v !== null && v !== BYE && w === v);
+    var isLose = (w !== null && w !== BYE && v !== null && v !== BYE && w !== v);
+
+    var tag = (v !== null && v !== BYE) ? 'button' : 'div';
+    var node = el(tag, 'slot');
+    if(tag === 'button'){ node.type = 'button'; }
+    if(v === null){ node.className += ' tbd'; }
+    if(v === BYE){ node.className += ' bye'; }
+    if(isWin){ node.className += ' win'; }
+    if(isLose){ node.className += ' lose'; }
+
+    var num = el('span', 'pnum', '');
+    var name = el('span', 'pname', '');
+    if(v === BYE){
+      name.textContent = 'Bye';
+    }else if(v === null){
+      name.textContent = 'To be decided';
+    }else{
+      num.textContent = String(seedNumber(st, v));
+      name.textContent = st.players[v];
+    }
+    node.appendChild(num);
+    node.appendChild(name);
+
+    if(tag === 'button'){
+      node.setAttribute('data-c', c);
+      node.setAttribute('data-m', m);
+      node.setAttribute('data-s', side);
+      node.setAttribute('aria-pressed', isWin ? 'true' : 'false');
+      node.title = 'Advance ' + st.players[v];
+    }
+    return node;
+  }
+
+  function seedNumber(st, id){
+    if(st.seeds && st.seeds[id]){ return st.seeds[id]; }
+    return id + 1;
+  }
+
+  function render(){
+    if(!state){ return; }
+    $('boardTitle').textContent = state.title;
+
+    var total = totalMatches(state);
+    var done = decidedMatches(state);
+    var prog = $('progress');
+    clear(prog);
+    prog.appendChild(el('b', null, done + ' of ' + total));
+    var tail = ' matches decided | '
+      + (state.pool ? 'seeded by round robin'
+        : (state.mode === 'shuffle' ? 'shuffled draw' : 'seeded draw'));
+    if(state.regionSize){
+      tail += ' | ' + state.regionNames.length + ' regions of ' + state.regionSize;
+    }
+    prog.appendChild(document.createTextNode(tail));
+
+    var wrap = $('rounds');
+    clear(wrap);
+    var path = pathCells(state);
+    var matchNo = 1;
+    var K = regionCount(state);
+
+    if(K > 1){
+      var rail = document.createElement('aside');
+      rail.className = 'rail';
+      rail.appendChild(el('div', 'rhead'));
+      var blocks = el('div', 'rblocks');
+      for(var b = 0; b < K; b++){
+        var blk = el('div', 'rblock');
+        blk.appendChild(el('span', 'rname', state.regionNames[b]));
+        blocks.appendChild(blk);
+      }
+      rail.appendChild(blocks);
+      wrap.appendChild(rail);
+    }
+
+    for(var c = 0; c < state.rounds.length - 1; c++){
+      var matches = state.rounds[c].length / 2;
+      var perRegion = matches / K;
+      var col = el('div', 'round' + (matches === 1 ? ' final' : ''));
+      var head = el('div', 'rhead');
+      head.appendChild(el('b', null, roundLabel(state, matches)));
+      head.appendChild(document.createTextNode(matches + (matches === 1 ? ' match' : ' matches')));
+      col.appendChild(head);
+      var cells = el('div', 'cells');
+
+      for(var m = 0; m < matches; m++){
+        var w = state.rounds[c + 1][m];
+        var cell = el('div', 'cell');
+        if(w !== null){ cell.className += ' won'; }
+        if(c > 0 && state.rounds[c][2 * m] !== null && state.rounds[c][2 * m + 1] !== null){
+          cell.className += ' fed';
+        }
+        if(path[c + ':' + m]){ cell.className += ' lit'; }
+        cell.setAttribute('data-cell', c + ':' + m);
+
+        if(K > 1 && perRegion >= 1 && (m + 1) % perRegion === 0 && m !== matches - 1){
+          cell.appendChild(el('div', 'rdiv'));
+        }
+
+        var card = el('div', 'card');
+        card.appendChild(el('span', 'mno', 'M' + matchNo));
+        matchNo++;
+        var mt = el('div', 'match');
+        mt.appendChild(slotNode(state, c, m, 0));
+        mt.appendChild(slotNode(state, c, m, 1));
+        card.appendChild(mt);
+        cell.appendChild(card);
+        cells.appendChild(cell);
+      }
+      col.appendChild(cells);
+      wrap.appendChild(col);
+    }
+
+    /* champion column */
+    var cc = el('div', 'round champ');
+    var ch = el('div', 'rhead');
+    ch.appendChild(el('b', null, 'Champion'));
+    cc.appendChild(ch);
+    var ccells = el('div', 'cells');
+    var ccell = el('div', 'cell');
+    var ccard = el('div', 'card');
+    var champ = championId(state);
+    var plate = el('div', 'plate' + (champ === null || champ === BYE ? ' empty' : ''));
+    plate.appendChild(el('span', 'k', champ === null || champ === BYE ? 'Still open' : 'Winner'));
+    plate.appendChild(el('span', 'v', (champ === null || champ === BYE) ? 'Play it out' : state.players[champ]));
+    ccard.appendChild(plate);
+    ccell.appendChild(ccard);
+    ccells.appendChild(ccell);
+    cc.appendChild(ccells);
+    wrap.appendChild(cc);
+
+    renderThird();
+    renderRun();
+    renderRecap();
+    $('shuffleBtn').textContent = state.pool ? 'Round robin' : 'Redraw';
+    save();
+  }
+
+  function poolCard(p, live){
+    var st = state;
+    var card = el('div', 'pool');
+    var h = el('h3', null, st.pool.names[p]);
+    var played = 0, total = 0, i;
+    for(i = 0; i < st.pool.games.length; i++){
+      if(st.pool.games[i].p !== p){ continue; }
+      total++;
+      if(st.pool.games[i].r){ played++; }
+    }
+    h.appendChild(el('span', null, played + ' of ' + total + ' played'));
+    card.appendChild(h);
+
+    var map = poolStats(st, p);
+    var order = poolOrder(st, p);
+    var table = el('table', 'stand');
+    var thead = el('thead');
+    var hr = el('tr');
+    hr.appendChild(el('th', 'l', ''));
+    hr.appendChild(el('th', 'l', 'Entrant'));
+    hr.appendChild(el('th', null, 'W-D-L'));
+    hr.appendChild(el('th', null, 'Pts'));
+    if(live){ hr.appendChild(el('th', null, '')); }
+    thead.appendChild(hr);
+    table.appendChild(thead);
+
+    var tbody = el('tbody');
+    for(i = 0; i < order.length; i++){
+      var id = order[i];
+      var st8 = map[id];
+      var tr = el('tr', i === 0 ? 'top' : null);
+      tr.appendChild(el('td', 'pos', String(i + 1)));
+      tr.appendChild(el('td', 'l', st.pool.entrants[id]));
+      tr.appendChild(el('td', 'rec', st8.w + '-' + st8.d + '-' + st8.l));
+      tr.appendChild(el('td', 'pts', String(st8.pts)));
+      if(live){
+        var td = el('td', 'nudge');
+        var up = el('button', 'nub', '^');
+        up.type = 'button';
+        up.disabled = (i === 0);
+        up.setAttribute('data-nudge', p);
+        up.setAttribute('data-idx', i);
+        up.setAttribute('data-dir', '-1');
+        up.setAttribute('aria-label', 'Move ' + st.pool.entrants[id] + ' up');
+        var dn = el('button', 'nub', 'v');
+        dn.type = 'button';
+        dn.disabled = (i === order.length - 1);
+        dn.setAttribute('data-nudge', p);
+        dn.setAttribute('data-idx', i);
+        dn.setAttribute('data-dir', '1');
+        dn.setAttribute('aria-label', 'Move ' + st.pool.entrants[id] + ' down');
+        td.appendChild(up);
+        td.appendChild(dn);
+        tr.appendChild(td);
+      }
+      tbody.appendChild(tr);
+    }
+    table.appendChild(tbody);
+    card.appendChild(table);
+
+    card.appendChild(el('p', 'glabel', 'Games'));
+    for(i = 0; i < st.pool.games.length; i++){
+      var g = st.pool.games[i];
+      if(g.p !== p){ continue; }
+      var row = el('div', 'game');
+      row.appendChild(sideNode(g, i, 'i', live));
+      row.appendChild(sideNode(g, i, 'j', live));
+      var quiet = (!live && g.r !== 'd');
+      var db = el(live ? 'button' : 'div',
+        'drawbtn' + (g.r === 'd' ? ' on' : '') + (quiet ? ' blank' : ''),
+        quiet ? '' : 'D');
+      if(live){
+        db.type = 'button';
+        db.setAttribute('data-game', i);
+        db.setAttribute('data-side', 'd');
+        db.setAttribute('aria-pressed', g.r === 'd' ? 'true' : 'false');
+        db.title = 'Call it a draw';
+      }
+      row.appendChild(db);
+      card.appendChild(row);
+    }
+    return card;
+  }
+
+  function sideNode(g, gi, which, live){
+    var id = (which === 'i') ? g.i : g.j;
+    var cls = 'side';
+    if(g.r === which){ cls += ' win'; }
+    else if(g.r === 'd'){ cls += ' drew'; }
+    else if(g.r){ cls += ' lose'; }
+    var node = el(live ? 'button' : 'div', cls, state.pool.entrants[id]);
+    if(live){
+      node.type = 'button';
+      node.setAttribute('data-game', gi);
+      node.setAttribute('data-side', which);
+      node.setAttribute('aria-pressed', g.r === which ? 'true' : 'false');
+    }
+    return node;
+  }
+
+  function renderPoolBoard(){
+    $('poolTitle').textContent = state.title;
+    var played = poolsPlayed(state);
+    var total = state.pool.games.length;
+    var prog = $('poolProgress');
+    clear(prog);
+    prog.appendChild(el('b', null, played + ' of ' + total));
+    prog.appendChild(document.createTextNode(' pool games played | '
+      + state.pool.pools.length + ' pools of ' + state.pool.size
+      + (state.pool.mode === 'shuffle' ? ' | shuffled' : ' | as entered')));
+
+    var grid = $('poolGrid');
+    clear(grid);
+    for(var p = 0; p < state.pool.pools.length; p++){
+      grid.appendChild(poolCard(p, true));
+    }
+    var btn = $('seedBtn');
+    btn.disabled = !poolsComplete(state);
+    btn.textContent = poolsComplete(state)
+      ? 'Seed the bracket'
+      : (total - played) + ' game' + ((total - played) === 1 ? '' : 's') + ' to go';
+  }
+
+  function renderRecap(){
+    var box = $('rrbox');
+    if(!state.pool){ box.hidden = true; return; }
+    box.hidden = false;
+    var grid = $('rrGrid');
+    clear(grid);
+    for(var p = 0; p < state.pool.pools.length; p++){
+      grid.appendChild(poolCard(p, false));
+    }
+  }
+
+  function renderThird(){
+    var wrap = $('thirdWrap');
+    if(!state.third){ wrap.hidden = true; return; }
+    wrap.hidden = false;
+    var box = $('thirdCard');
+    clear(box);
+    var losers = semiLosers(state);
+    var mt = el('div', 'match');
+
+    if(!losers){
+      var a = el('div', 'slot tbd');
+      a.appendChild(el('span', 'pnum', ''));
+      a.appendChild(el('span', 'pname', 'Semifinal loser'));
+      var b = el('div', 'slot tbd');
+      b.appendChild(el('span', 'pnum', ''));
+      b.appendChild(el('span', 'pname', 'Semifinal loser'));
+      mt.appendChild(a);
+      mt.appendChild(b);
+      box.appendChild(mt);
+      return;
+    }
+    if(state.thirdWinner !== null && losers.indexOf(state.thirdWinner) < 0){
+      state.thirdWinner = null;
+    }
+    for(var i = 0; i < 2; i++){
+      var id = losers[i];
+      var isWin = (state.thirdWinner === id);
+      var isLose = (state.thirdWinner !== null && !isWin);
+      var btn = el('button', 'slot' + (isWin ? ' win' : '') + (isLose ? ' lose' : ''));
+      btn.type = 'button';
+      btn.appendChild(el('span', 'pnum', String(seedNumber(state, id))));
+      btn.appendChild(el('span', 'pname', state.players[id]));
+      btn.setAttribute('data-third', id);
+      btn.setAttribute('aria-pressed', isWin ? 'true' : 'false');
+      mt.appendChild(btn);
+    }
+    box.appendChild(mt);
+  }
+
+  function renderRun(){
+    var run = championRun(state);
+    var wrap = $('runline');
+    if(!run){ wrap.hidden = true; return; }
+    wrap.hidden = false;
+    var p = $('runText');
+    clear(p);
+    p.appendChild(el('b', null, run.name));
+    if(!run.beaten.length){
+      p.appendChild(document.createTextNode(' takes it without playing a soul.'));
+      return;
+    }
+    p.appendChild(document.createTextNode(' won the title, beating ' + listOf(run.beaten) + '.'));
+  }
+
+  function listOf(arr){
+    if(arr.length === 1){ return arr[0]; }
+    if(arr.length === 2){ return arr[0] + ' and ' + arr[1]; }
+    return arr.slice(0, -1).join(', ') + ', and ' + arr[arr.length - 1];
+  }
+
+  function draw(){
+    if(!state){ openSetup(false); return; }
+    if(state.phase === 'pools'){
+      $('setup').hidden = true;
+      $('board').hidden = true;
+      $('poolboard').hidden = false;
+      renderPoolBoard();
+      save();
+    }else{
+      $('setup').hidden = true;
+      $('poolboard').hidden = true;
+      $('board').hidden = false;
+      render();
+    }
+  }
+
+  /* ---------- interaction ---------- */
+  function onPoolClick(ev){
+    var t = ev.target.closest ? ev.target.closest('button') : null;
+    if(!t){ return; }
+
+    if(t.hasAttribute('data-game')){
+      var gi = parseInt(t.getAttribute('data-game'), 10);
+      var side = t.getAttribute('data-side');
+      var g = state.pool.games[gi];
+      g.r = (g.r === side) ? null : side;
+      if(state.pool.manual){ delete state.pool.manual[g.p]; }
+      renderPoolBoard();
+      save();
+      return;
+    }
+
+    if(t.hasAttribute('data-nudge')){
+      var p = parseInt(t.getAttribute('data-nudge'), 10);
+      var idx = parseInt(t.getAttribute('data-idx'), 10);
+      var dir = parseInt(t.getAttribute('data-dir'), 10);
+      var order = poolOrder(state, p).slice();
+      var swap = idx + dir;
+      if(swap < 0 || swap >= order.length){ return; }
+      var tmp = order[idx]; order[idx] = order[swap]; order[swap] = tmp;
+      if(!state.pool.manual){ state.pool.manual = {}; }
+      state.pool.manual[p] = order;
+      renderPoolBoard();
+      save();
+      toast('Standings set by hand for ' + state.pool.names[p] + '.');
+    }
+  }
+
+  function doSeedFromPools(){
+    var line = seedLine(state);
+    var names = [];
+    for(var i = 0; i < line.length; i++){ names.push(state.pool.entrants[line[i]]); }
+    var keep = state.pool;
+    var st = makeBracket(names, 'seed', state.third, state.title,
+      state.regionSize, state.regionNames);
+    st.pool = keep;
+    st.phase = 'bracket';
+    state = st;
+    draw();
+    toast('Seeded 1 through ' + names.length + ' from the pools.');
+  }
+
+  function reopenPools(){
+    state = {
+      v: 3,
+      title: state.title,
+      mode: state.pool.mode,
+      third: state.third,
+      regionSize: state.regionSize,
+      regionNames: state.regionNames,
+      phase: 'pools',
+      pool: state.pool
+    };
+    draw();
+  }
+
+  function onBoardClick(ev){
+    var btn = ev.target.closest ? ev.target.closest('button.slot') : null;
+    if(!btn){ return; }
+
+    if(btn.hasAttribute('data-third')){
+      var id = parseInt(btn.getAttribute('data-third'), 10);
+      state.thirdWinner = (state.thirdWinner === id) ? state.thirdWinner : id;
+      renderThird();
+      save();
+      return;
+    }
+
+    var c = parseInt(btn.getAttribute('data-c'), 10);
+    var m = parseInt(btn.getAttribute('data-m'), 10);
+    var s = parseInt(btn.getAttribute('data-s'), 10);
+    var v = state.rounds[c][2 * m + s];
+    if(v === null || v === BYE){ return; }
+    if(state.rounds[c + 1][m] === v){ return; }
+
+    var hadDownstream = false;
+    var p = m;
+    for(var cc = c + 2; cc < state.rounds.length; cc++){
+      p = Math.floor(p / 2);
+      if(state.rounds[cc][p] !== null){ hadDownstream = true; }
+    }
+
+    state.rounds[c + 1][m] = v;
+    clearDownstream(state, c + 1, m);
+    resolveByes(state);
+    if(c <= semiColumn(state)){ state.thirdWinner = null; }
+    render();
+    if(hadDownstream){ toast('Later rounds cleared from that match on.'); }
+  }
+
+  function jumpToNext(){
+    for(var c = 0; c < state.rounds.length - 1; c++){
+      for(var m = 0; m < state.rounds[c].length / 2; m++){
+        var a = state.rounds[c][2 * m], b = state.rounds[c][2 * m + 1];
+        if(state.rounds[c + 1][m] === null && a !== null && b !== null){
+          var cell = document.querySelector('[data-cell="' + c + ':' + m + '"]');
+          if(cell){
+            cell.classList.add('target');
+            setTimeout(function(node){ return function(){ node.classList.remove('target'); }; }(cell), 1600);
+            var first = cell.querySelector('button.slot');
+            if(first){ first.focus({ preventScroll: true }); }
+            cell.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+          }
+          return;
+        }
+      }
+    }
+    if(state.third && semiLosers(state) && state.thirdWinner === null){
+      $('thirdWrap').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      toast('Only the third place match is left.');
+      return;
+    }
+    toast('Every match is decided.');
+  }
+
+  /* ---------- setup panel ---------- */
+  var setupMode = 'seed';
+  var setupRegion = 0;
+  var setupPool = 0;
+  var REGION_SIZES = [0, 4, 8, 16];
+  var POOL_SIZES = [0, 3, 4, 5, 6];
+
+  function readNames(){
+    var raw = $('names').value;
+    var parts = raw.split(/\r?\n/);
+    var out = [];
+    for(var i = 0; i < parts.length; i++){
+      var t = parts[i].replace(/^\s+|\s+$/g, '');
+      if(t.length){ out.push(t.slice(0, 40)); }
+    }
+    return out;
+  }
+
+  function regionBtn(r){ return $('rs' + r); }
+  function poolBtn(r){ return $('ps' + r); }
+
+  function setPool(r){
+    setupPool = r;
+    for(var i = 0; i < POOL_SIZES.length; i++){
+      var v = POOL_SIZES[i];
+      poolBtn(v).setAttribute('aria-pressed', v === r ? 'true' : 'false');
+    }
+    updateCount();
+  }
+
+  function setRegion(r){
+    setupRegion = r;
+    for(var i = 0; i < REGION_SIZES.length; i++){
+      var v = REGION_SIZES[i];
+      regionBtn(v).setAttribute('aria-pressed', v === r ? 'true' : 'false');
+    }
+    $('rnameField').hidden = (r === 0);
+    updateCount();
+  }
+
+  function updateCount(){
+    var n = readNames().length;
+    var c = $('ncount');
+    var msg = n + (n === 1 ? ' entrant' : ' entrants');
+    var ok = (n >= 2 && n <= MAX_ENTRANTS);
+
+    if(ok){
+      var size = bracketSize(n);
+      var byes = size - n;
+      msg += ' | bracket of ' + size
+        + (byes ? ' with ' + byes + (byes === 1 ? ' bye' : ' byes') : ' with no byes');
+      c.className = 'count';
+    }else if(n > MAX_ENTRANTS){
+      msg += ' | trim it to ' + MAX_ENTRANTS;
+      c.className = 'count bad';
+    }else{
+      msg += ' | need at least 2';
+      c.className = 'count bad';
+    }
+    c.textContent = msg;
+
+    for(var i = 0; i < REGION_SIZES.length; i++){
+      var v = REGION_SIZES[i];
+      var usable = (v === 0) || (ok && regionsAllowed(n, v));
+      regionBtn(v).disabled = !usable;
+      if(!usable && setupRegion === v){ setRegion(0); return; }
+    }
+
+    for(var pi = 0; pi < POOL_SIZES.length; pi++){
+      var pv = POOL_SIZES[pi];
+      var pok = (pv === 0) || (ok && pv <= n);
+      poolBtn(pv).disabled = !pok;
+      if(!pok && setupPool === pv){ setPool(0); return; }
+    }
+
+    var pc = $('pcount');
+    pc.className = 'count';
+    if(!setupPool){
+      pc.textContent = 'Straight to the bracket, seeded from the list above.';
+    }else{
+      var pk = poolCountFor(n, setupPool);
+      var pg = poolGameCount(n, setupPool);
+      pc.textContent = pk + (pk === 1 ? ' pool' : ' pools') + ', ' + pg
+        + (pg === 1 ? ' game' : ' games') + ' to play. Nobody is eliminated; the table sets the seed line.';
+    }
+    $('buildBtn').textContent = setupPool ? 'Start the round robin' : 'Build the bracket';
+
+    var rc = $('rcount');
+    if(!setupRegion){
+      rc.className = 'count';
+      rc.textContent = ok
+        ? 'One line of seeds, 1 through ' + bracketSize(n) + '.'
+        : 'One bracket, seeded straight through.';
+    }else{
+      var geo = geometry(n, setupRegion);
+      rc.className = 'count';
+      rc.textContent = geo.k + ' regions, each seeded 1 through ' + geo.r
+        + '. Top seeds spread across regions, region winners meet at the end.';
+    }
+
+    $('buildBtn').disabled = !ok;
+  }
+
+  function readRegionNames(){
+    var raw = $('rnames').value;
+    if(!raw){ return null; }
+    var parts = raw.split(',');
+    var out = [];
+    for(var i = 0; i < parts.length; i++){
+      out.push(parts[i].replace(/^\s+|\s+$/g, ''));
+    }
+    return out;
+  }
+
+  function setMode(m){
+    setupMode = m;
+    $('modeSeed').setAttribute('aria-pressed', m === 'seed' ? 'true' : 'false');
+    $('modeShuffle').setAttribute('aria-pressed', m === 'shuffle' ? 'true' : 'false');
+  }
+
+  function openSetup(fromExisting){
+    if(fromExisting && state){
+      $('tname').value = state.title === 'Bracket' ? '' : state.title;
+      $('names').value = (state.phase === 'pools' ? state.pool.entrants : state.players).join('\n');
+      setMode(state.mode);
+      $('rnames').value = state.regionSize ? state.regionNames.join(', ') : '';
+      setRegion(state.regionSize || 0);
+      setPool(state.pool ? state.pool.size : 0);
+      $('thirdBox').checked = !!state.third;
+      $('cancelBtn').hidden = false;
+      $('setupTitle').textContent = 'Change the entrants';
+      $('setupLede').textContent = 'Rebuilding starts the bracket clean. Results so far will be cleared.';
+    }else{
+      $('cancelBtn').hidden = true;
+      $('setupTitle').textContent = 'Set the draw';
+      $('setupLede').textContent = 'One name per line. Anything from 2 to 64 entrants. Empty slots become byes.';
+    }
+    updateCount();
+    $('setup').hidden = false;
+    $('board').hidden = true;
+    $('poolboard').hidden = true;
+    $('names').focus();
+  }
+
+  function closeSetup(){
+    $('setup').hidden = true;
+    draw();
+  }
+
+  function doBuild(){
+    var names = readNames();
+    if(names.length < 2 || names.length > MAX_ENTRANTS){ return; }
+    var title = $('tname').value.replace(/^\s+|\s+$/g, '');
+    if(setupPool){
+      state = makePoolStage(names, setupMode, setupPool, $('thirdBox').checked,
+        title || 'Bracket', setupRegion, readRegionNames());
+      closeSetup();
+      toast(state.pool.pools.length + ' pools set. Play them out to fix the seeds.');
+      return;
+    }
+    state = makeBracket(names, setupMode, $('thirdBox').checked, title || 'Bracket',
+      setupRegion, readRegionNames());
+    closeSetup();
+    toast(state.regionSize
+      ? state.regionNames.length + ' regions of ' + state.regionSize + ' are set.'
+      : 'Bracket of ' + state.rounds[0].length + ' is ready.');
+  }
+
+  function guardedBuild(){
+    if(state && state.phase === 'pools' && poolsPlayed(state) > 0){
+      ask('Redo the pools?', 'The pools are drawn again from these names and every result so far is cleared.', 'Redo', doBuild);
+      return;
+    }
+    if(state && state.phase === 'bracket' && decidedMatches(state) > 0){
+      ask('Rebuild the bracket?', 'The draw is redone from these names and every result so far is cleared.', 'Rebuild', doBuild);
+    }else{
+      doBuild();
+    }
+  }
+
+  function doRedraw(){
+    state = makeBracket(state.players, 'shuffle', state.third, state.title,
+      state.regionSize, state.regionNames);
+    draw();
+    toast('New draw. Everyone is back in.');
+  }
+
+  /* ---------- wiring ---------- */
+  $('names').addEventListener('input', updateCount);
+  $('modeSeed').addEventListener('click', function(){ setMode('seed'); });
+  $('modeShuffle').addEventListener('click', function(){ setMode('shuffle'); });
+  for(var ri = 0; ri < REGION_SIZES.length; ri++){
+    (function(v){
+      regionBtn(v).addEventListener('click', function(){ setRegion(v); });
+    })(REGION_SIZES[ri]);
+  }
+  $('buildBtn').addEventListener('click', guardedBuild);
+  $('cancelBtn').addEventListener('click', closeSetup);
+
+  for(var pj = 0; pj < POOL_SIZES.length; pj++){
+    (function(v){
+      poolBtn(v).addEventListener('click', function(){ setPool(v); });
+    })(POOL_SIZES[pj]);
+  }
+
+  $('rounds').addEventListener('click', onBoardClick);
+  $('poolGrid').addEventListener('click', onPoolClick);
+  $('seedBtn').addEventListener('click', function(){
+    if(!poolsComplete(state)){ return; }
+    doSeedFromPools();
+  });
+  $('poolEditBtn').addEventListener('click', function(){ openSetup(true); });
+  $('poolPrintBtn').addEventListener('click', function(){ window.print(); });
+  $('poolLinkBtn').addEventListener('click', function(){
+    copyText(shareUrl(), 'Link copied. It carries the pools with it.');
+  });
+  $('poolResetBtn').addEventListener('click', function(){ startOver(); });
+  $('thirdCard').addEventListener('click', onBoardClick);
+
+  $('nextBtn').addEventListener('click', jumpToNext);
+  $('editBtn').addEventListener('click', function(){ openSetup(true); });
+  $('printBtn').addEventListener('click', function(){ window.print(); });
+  $('linkBtn').addEventListener('click', function(){
+    copyText(shareUrl(), 'Link copied. It carries the bracket with it.');
+  });
+  $('shuffleBtn').addEventListener('click', function(){
+    if(state.pool){
+      if(decidedMatches(state) > 0){
+        ask('Back to the round robin?', 'The bracket is cleared. Pool results are kept, so you can adjust them and seed again.', 'Go back', reopenPools);
+      }else{
+        reopenPools();
+      }
+      return;
+    }
+    if(decidedMatches(state) > 0){
+      ask('Redraw the bracket?', 'Everyone gets a new random position and every result so far is cleared.', 'Redraw', doRedraw);
+    }else{
+      doRedraw();
+    }
+  });
+  function startOver(){
+    ask('Start over?', 'Everything is thrown out and you go back to an empty entrant list.', 'Start over', function(){
+      state = null;
+      save();
+      $('tname').value = '';
+      $('names').value = '';
+      $('rnames').value = '';
+      setMode('seed');
+      setRegion(0);
+      setPool(0);
+      $('thirdBox').checked = false;
+      openSetup(false);
+    });
+  }
+  $('resetBtn').addEventListener('click', startOver);
+
+  $('dlgNo').addEventListener('click', closeDialog);
+  $('dlgYes').addEventListener('click', function(){
+    var fn = dlgAction;
+    closeDialog();
+    if(fn){ fn(); }
+  });
+  $('veil').addEventListener('click', function(ev){
+    if(ev.target === $('veil')){ closeDialog(); }
+  });
+  document.addEventListener('keydown', function(ev){
+    if(ev.key === 'Escape' && !$('veil').hidden){ closeDialog(); }
+  });
+
+  /* ---------- boot ---------- */
+  function boot(){
+    var fromHash = null;
+    if(location.hash.indexOf('#b=') === 0){
+      try{ fromHash = sane(JSON.parse(fromB64(location.hash.slice(3)))); }
+      catch(e){ fromHash = null; }
+    }
+    state = fromHash || load();
+    if(state){
+      if(state.phase !== 'pools'){ resolveByes(state); }
+      $('setup').hidden = true;
+      draw();
+      if(fromHash){
+        toast(state.phase === 'pools' ? 'Shared pools loaded.' : 'Shared bracket loaded.');
+      }
+    }else{
+      openSetup(false);
+    }
+  }
+
+  boot();
+})();
+</script>
+</body>
+</html>
